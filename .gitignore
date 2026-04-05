@@ -5,7 +5,7 @@ node_modules/
 # Environment — never commit real secrets; GitHub Push Protection blocks SMTP/API keys in .env.
 # On your VPS: clone the repo, then create backend/.env from .env.example or copy it with scp.
 .env
-**/.env
+/.env
 !.env.example
 !**/.env.example
 

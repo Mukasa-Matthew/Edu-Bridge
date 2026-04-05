@@ -80,6 +80,20 @@ git clone https://github.com/Mukasa-Matthew/Edu-Bridge.git .
 npm install
 ```
 
+### Git: “detected dubious ownership”
+
+If the app directory is owned by **`deploy`** but you run **`git pull` as root**, Git 2.35+ may refuse with *dubious ownership*. Prefer updates as `deploy`:
+
+```bash
+sudo -u deploy -H bash -lc 'cd /var/www/edubridge && git pull && npm install && npm run build -w frontend'
+```
+
+Or allow that path for root’s Git (one-time):
+
+```bash
+git config --global --add safe.directory /var/www/edubridge
+```
+
 ---
 
 ## 4. Backend environment (`backend/.env`)
@@ -153,11 +167,9 @@ npm run build -w frontend
 
 Output: `frontend/dist/`. With nginx serving the SPA and proxying `/api` to Node, leave `VITE_API_BASE_URL` **unset** so the browser calls `/api/...` on the same origin.
 
-### If `vite build` fails: “Cannot find native binding” / `@rolldown/binding-linux-x64-gnu`
+### If `vite build` still fails after `npm install`
 
-Vite 8 bundles with **Rolldown**, which ships **platform-specific** optional packages. In an npm **workspace** install, those sometimes do not land under `frontend/node_modules` ([npm/cli#4828](https://github.com/npm/cli/issues/4828)). This repo lists the common Rolldown bindings as **optionalDependencies** in `frontend/package.json` so Linux (and other OSes) get the right binary after a normal `npm install`.
-
-If the build still fails on the server, reinstall from the app root:
+The frontend is pinned to **Vite 6** (Rollup) so production builds do not depend on Rolldown’s native addons. If you upgraded Vite locally and see **“Cannot find native binding”**, see [npm/cli#4828](https://github.com/npm/cli/issues/4828) or reinstall from the repo root:
 
 ```bash
 cd /var/www/edubridge
@@ -165,16 +177,6 @@ rm -rf node_modules frontend/node_modules backend/node_modules
 npm install
 npm run build -w frontend
 ```
-
-As a last resort, install the Linux binding explicitly, then rebuild:
-
-```bash
-cd /var/www/edubridge
-npm install -w frontend @rolldown/binding-linux-x64-gnu@1.0.0-rc.12
-npm run build -w frontend
-```
-
-(Use the same `@rolldown/binding-*` major/rc as the `rolldown` version pulled in by `vite` if you upgrade Vite later.)
 
 ---
 

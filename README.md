@@ -56,6 +56,38 @@ Ensure PostgreSQL is running and matches `PG_*` in `backend/.env`.
 
 > **Security / GitHub:** Do **not** commit `backend/.env` with real SMTP keys or passwords. [GitHub Push Protection](https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line) will block the push. Keep secrets only on your machine and VPS: after `git clone`, copy `backend/.env` to the server with `scp`, or create it from `backend/.env.example` and fill values there.
 
+If a push is already blocked because `backend/.env` exists in **old commits**, GitHub scans the whole branch history. **Deleting the file today is not enough** — you must rewrite history, then force-push (coordinate with anyone else on `main`).
+
+**Option A — Windows (PowerShell, no extra tools):** from the repo root, with a clean working tree (`git status` empty):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/purge-backend-env-from-history.ps1
+```
+
+If Git reports a dirty tree, either commit your work first or let the script stash it (including untracked files), then restore it when finished:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/purge-backend-env-from-history.ps1 -Stash
+```
+
+**Option B — `git filter-repo` (any OS):** [install](https://github.com/newren/git-filter-repo) once, then:
+
+```bash
+git filter-repo --path backend/.env --invert-paths --force
+git push origin main --force
+```
+
+**Option C — Git Bash / stock Git:**
+
+```bash
+git filter-branch -f --index-filter "git rm --cached --ignore-unmatch backend/.env" --prune-empty -- main
+git for-each-ref --format="%(refname)" refs/original | xargs -r -n1 git update-ref -d
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+git push origin main --force
+```
+
+Afterward: run `git rm --cached backend/.env` if Git still tracks it, keep `**/.env` in `.gitignore`, and **revoke the leaked Sendinblue (Brevo) SMTP key** in the Brevo dashboard and put the new key only in local/VPS `backend/.env`.
+
 ### 3. Run the stack (migrations + seeds + dev servers)
 
 From the repository root:
