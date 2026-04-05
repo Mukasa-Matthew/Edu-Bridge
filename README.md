@@ -54,7 +54,7 @@ cp backend/.env.example backend/.env
 
 Ensure PostgreSQL is running and matches `PG_*` in `backend/.env`.
 
-> **Security:** This repository is configured to **track `backend/.env`** for your VPS/team workflow. Treat the GitHub repo as sensitive: use a **private** repository, restrict collaborators, and **never** make it public without removing `.env` from history and **rotating every secret** (database, JWT, SMTP, API keys). For maximum safety, prefer only committing `backend/.env.example` and injecting real values on the server.
+> **Security / GitHub:** Do **not** commit `backend/.env` with real SMTP keys or passwords. [GitHub Push Protection](https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line) will block the push. Keep secrets only on your machine and VPS: after `git clone`, copy `backend/.env` to the server with `scp`, or create it from `backend/.env.example` and fill values there.
 
 ### 3. Run the stack (migrations + seeds + dev servers)
 
@@ -106,13 +106,17 @@ Backend-only scripts are also available under `npm run <script> -w backend`.
 
 ---
 
-## VPS deployment (outline)
+## VPS deployment
 
-1. Install Node.js, PostgreSQL, and optionally Redis on the server (or use Docker for databases only).  
-2. Clone the repo, `npm install`, `cp backend/.env.example backend/.env`, set `NODE_ENV=production`, strong `JWT_SECRET`, production `FRONTEND_URL`, and DB credentials.  
-3. Run `npm run migrate -w backend` and `npm run seed:demo -w backend` / `seed:demo:materials` if you want demo data (optional in production).  
-4. `npm run build` then serve `frontend/dist` with nginx (or similar) and run the API with `npm run start -w backend` behind a process manager (systemd, PM2).  
-5. Configure HTTPS and proxy `/api` (and `/uploads` if served from the API) to the backend port.
+Step-by-step production setup (Ubuntu, nginx, PM2, PostgreSQL, TLS) is in **[VPS-SETUP.md](./VPS-SETUP.md)**.
+
+Short outline:
+
+1. Install Node.js, PostgreSQL, and optionally Redis (or Docker for DBs only).  
+2. Clone the repo, `npm install`, create `backend/.env` from `backend/.env.example` with production values (`NODE_ENV`, `FRONTEND_URL`, `JWT_SECRET`, `PG_*`).  
+3. Run `npm run migrate -w backend` and optional seeds.  
+4. `npm run build -w frontend`, serve `frontend/dist` with nginx, proxy `/api` and `/uploads` to the Node API (see **VPS-SETUP.md**).  
+5. Run the API with PM2 or systemd; enable HTTPS (e.g. Certbot).
 
 ---
 

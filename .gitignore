@@ -2,13 +2,12 @@
 node_modules/
 **/node_modules/
 
-# Environment files — other .env files stay ignored; backend/.env is tracked (VPS / team workflow).
-# If this repo is ever public, remove backend/.env from git and rotate all secrets immediately.
+# Environment — never commit real secrets; GitHub Push Protection blocks SMTP/API keys in .env.
+# On your VPS: clone the repo, then create backend/.env from .env.example or copy it with scp.
 .env
 **/.env
 !.env.example
 !**/.env.example
-!backend/.env
 
 # Builds & generated assets
 dist/
