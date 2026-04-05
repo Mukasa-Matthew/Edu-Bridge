@@ -2,11 +2,13 @@
 node_modules/
 **/node_modules/
 
-# Local environment (secrets) — use backend/.env.example as the template
+# Environment files — other .env files stay ignored; backend/.env is tracked (VPS / team workflow).
+# If this repo is ever public, remove backend/.env from git and rotate all secrets immediately.
 .env
 **/.env
 !.env.example
 !**/.env.example
+!backend/.env
 
 # Builds & generated assets
 dist/

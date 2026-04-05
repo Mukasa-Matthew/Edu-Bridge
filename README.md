@@ -54,7 +54,7 @@ cp backend/.env.example backend/.env
 
 Ensure PostgreSQL is running and matches `PG_*` in `backend/.env`.
 
-> **Important:** The real `backend/.env` file is **not** committed to Git. Only `backend/.env.example` is in the repository. Keep passwords, JWT secrets, and SMTP keys out of version control—use your host’s secret manager or CI variables on a VPS.
+> **Security:** This repository is configured to **track `backend/.env`** for your VPS/team workflow. Treat the GitHub repo as sensitive: use a **private** repository, restrict collaborators, and **never** make it public without removing `.env` from history and **rotating every secret** (database, JWT, SMTP, API keys). For maximum safety, prefer only committing `backend/.env.example` and injecting real values on the server.
 
 ### 3. Run the stack (migrations + seeds + dev servers)
 
