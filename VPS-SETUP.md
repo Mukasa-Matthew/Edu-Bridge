@@ -167,9 +167,21 @@ npm run build -w frontend
 
 Output: `frontend/dist/`. With nginx serving the SPA and proxying `/api` to Node, leave `VITE_API_BASE_URL` **unset** so the browser calls `/api/...` on the same origin.
 
-### If `vite build` still fails after `npm install`
+### If `vite build` fails on Linux (Rolldown / Lightning CSS native `.node`)
 
-The frontend is pinned to **Vite 6** (Rollup) so production builds do not depend on Rolldown’s native addons. If you upgraded Vite locally and see **“Cannot find native binding”**, see [npm/cli#4828](https://github.com/npm/cli/issues/4828) or reinstall from the repo root:
+**Vite 8** pulls **Rolldown** and **Lightning CSS**, which use platform-specific optional packages. In an npm **workspace** install they sometimes never land under `frontend/node_modules` ([npm/cli#4828](https://github.com/npm/cli/issues/4828)). This repo lists common **Lightning CSS** bindings as `optionalDependencies` in `frontend/package.json`; after `git pull`, run **`npm install` from the repo root** so they install.
+
+If you still see **`lightningcss.linux-x64-gnu.node`** or **`@rolldown/binding-linux-x64-gnu`** missing, install explicitly, then rebuild:
+
+```bash
+cd /var/www/edubridge
+npm install -w frontend lightningcss-linux-x64-gnu@1.32.0
+npm run build -w frontend
+```
+
+(Use the same version as the `lightningcss` package required by your installed `vite`, e.g. check `npm ls lightningcss -w frontend`.)
+
+Full clean reinstall from root:
 
 ```bash
 cd /var/www/edubridge
