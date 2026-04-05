@@ -14,7 +14,12 @@ const members = [
     photo: encodeURI('/Team/WhatsApp Image 2026-04-05 at 2.45.24 PM.jpeg'),
     linkedin: 'https://www.linkedin.com/in/martha-praise-katusiime-15455b328',
   },
-  { name: 'Ocen Deo Lino', role: 'Lead Developer', initials: 'OD' },
+  {
+    name: 'Ocen Deolino',
+    role: 'Lead Developer',
+    initials: 'OD',
+    photo: encodeURI('/Team/WhatsApp Image 2026-04-05 at 5.07.18 PM.jpeg'),
+  },
   {
     name: 'Elly Naguma',
     role: 'UI/UX Designer',
