@@ -1,0 +1,1 @@
+-- Admin user is inserted by migrate.js using a bcrypt hash (never store plain text).

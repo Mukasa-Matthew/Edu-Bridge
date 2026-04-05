@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PG_DATABASE:-edubridge}
+      POSTGRES_USER: ${PG_USER:-edubridge}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-edubridge_secret}
+    ports:
+      - '5432:5432'
+    volumes:
+      - edubridge_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${PG_USER:-edubridge} -d ${PG_DATABASE:-edubridge}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass redisdev
+    ports:
+      - '6379:6379'
+    volumes:
+      - edubridge_redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redisdev', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ['sh', '-c', 'node src/migrate.js && node src/app.js']
+    ports:
+      - '3001:3001'
+    env_file:
+      - ./backend/.env
+    environment:
+      PG_HOST: postgres
+      PG_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redisdev
+      NODE_ENV: production
+    volumes:
+      - edubridge_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  edubridge_pg:
+  edubridge_redis:
+  edubridge_uploads:

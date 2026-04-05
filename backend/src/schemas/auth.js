@@ -1,0 +1,91 @@
+export const registerStudentBody = {
+  type: 'object',
+  required: [
+    'fullName',
+    'email',
+    'phone',
+    'password',
+    'schoolName',
+    'classLevel',
+    'district',
+    'physicalAddress',
+    'parentGuardianName',
+    'parentGuardianPhone',
+    'subjectsOfInterest',
+  ],
+  properties: {
+    fullName: { type: 'string', minLength: 2 },
+    email: { type: 'string', format: 'email' },
+    phone: { type: 'string', minLength: 9 },
+    password: { type: 'string', minLength: 8 },
+    schoolName: { type: 'string', minLength: 2 },
+    classLevel: { type: 'string' },
+    district: { type: 'string', minLength: 2 },
+    physicalAddress: { type: 'string', minLength: 3 },
+    parentGuardianName: { type: 'string', minLength: 2 },
+    parentGuardianPhone: { type: 'string', minLength: 9 },
+    subjectsOfInterest: { type: 'array', items: { type: 'string' }, minItems: 1 },
+  },
+}
+
+export const registerTutorBody = {
+  type: 'object',
+  required: [
+    'fullName',
+    'email',
+    'phone',
+    'password',
+    'nationalId',
+    'qualification',
+    'institution',
+    'graduationYear',
+    'employer',
+    'experience',
+    'bio',
+    'primarySubject',
+    'teachingLevels',
+    'sessionMode',
+    'groupRateUgx',
+    'oneOnOneRateUgx',
+    'district',
+  ],
+  properties: {
+    fullName: { type: 'string', minLength: 2 },
+    email: { type: 'string', format: 'email' },
+    phone: { type: 'string', minLength: 9 },
+    password: { type: 'string', minLength: 8 },
+    nationalId: { type: 'string', minLength: 5 },
+    qualification: { type: 'string' },
+    institution: { type: 'string', minLength: 2 },
+    graduationYear: { type: 'integer', minimum: 1990, maximum: 2035 },
+    employer: { type: 'string', minLength: 2 },
+    experience: { type: 'string' },
+    bio: { type: 'string', minLength: 20 },
+    primarySubject: { type: 'string', minLength: 2 },
+    secondarySubject: { type: 'string' },
+    teachingLevels: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    sessionMode: { type: 'string' },
+    groupRateUgx: { type: 'integer', minimum: 1 },
+    oneOnOneRateUgx: { type: 'integer', minimum: 1 },
+    district: { type: 'string', minLength: 2 },
+  },
+}
+
+export const loginBody = {
+  type: 'object',
+  required: ['email', 'password', 'role'],
+  properties: {
+    email: { type: 'string', format: 'email' },
+    password: { type: 'string' },
+    role: { type: 'string', enum: ['student', 'tutor', 'admin'] },
+  },
+}
+
+export const changePasswordBody = {
+  type: 'object',
+  required: ['currentPassword', 'newPassword'],
+  properties: {
+    currentPassword: { type: 'string', minLength: 1 },
+    newPassword: { type: 'string', minLength: 8 },
+  },
+}

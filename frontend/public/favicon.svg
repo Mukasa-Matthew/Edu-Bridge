@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="EduBridge">
+  <rect width="32" height="32" rx="6" fill="#1E3A5F"/>
+  <g fill="none" stroke="#0EA5E9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 7v18"/>
+    <path d="M7 9.5c0-1 .9-1.75 2-1.75h5.5c1.1 0 2 .75 2 1.75V24c0-1-.9-1.75-2-1.75H9c-1.1 0-2 .75-2 1.75V9.5z"/>
+    <path d="M25 9.5c0-1-.9-1.75-2-1.75h-5.5c-1.1 0-2 .75-2 1.75V24c0-1 .9-1.75 2-1.75H23c1.1 0 2 .75 2 1.75V9.5z"/>
+  </g>
+</svg>

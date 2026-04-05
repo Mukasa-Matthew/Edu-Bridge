@@ -1,0 +1,21 @@
+{
+  "name": "edubridge-ug-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:prepare": "npm run migrate -w backend && npm run seed:demo -w backend && npm run seed:demo:materials -w backend",
+    "dev": "npm run dev:prepare && concurrently -n fe,be -c cyan,magenta \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "dev:app-only": "concurrently -n fe,be -c cyan,magenta \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "build": "npm run build -w frontend",
+    "migrate": "npm run migrate -w backend",
+    "seed:demo": "npm run seed:demo -w backend",
+    "seed:demo:materials": "npm run seed:demo:materials -w backend",
+    "lint": "npm run lint -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
