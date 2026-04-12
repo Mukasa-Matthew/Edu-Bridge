@@ -58,7 +58,7 @@ export default function Hero() {
       <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         {/* Copy */}
         <div className="text-center lg:text-left">
-          <p className="mb-4 inline-flex rounded-full bg-sky/25 px-4 py-1.5 font-heading text-sm font-medium text-sky backdrop-blur-sm">
+          <p className="mb-4 inline-flex rounded-full border border-white/50 bg-white/95 px-4 py-1.5 font-heading text-sm font-semibold text-navy shadow-md backdrop-blur-sm">
             Uganda&apos;s #1 EdTech Platform
           </p>
           <h1 className="font-heading text-3xl font-bold leading-tight text-white drop-shadow-sm sm:text-4xl lg:text-[2.65rem] xl:text-5xl">
