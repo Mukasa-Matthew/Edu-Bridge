@@ -56,8 +56,8 @@ export default function Contact() {
               <li>
                 <h3 className="font-heading text-base font-semibold text-navy">Phone</h3>
                 <p className="mt-1">
-                  <a href="tel:+256700000000" className="text-blue hover:text-sky">
-                    +256 700 000 000
+                  <a href="tel:+256740014177" className="text-blue hover:text-sky">
+                    +256740014177
                   </a>
                 </p>
               </li>
