@@ -5,6 +5,72 @@ import { getPlatformSettings } from '../lib/platform.js'
 import { notifyUser } from '../lib/notify.js'
 import { readUploadFile, mimeForMaterialFileType } from '../lib/materialFile.js'
 
+async function fetchWebsiteTrafficStats(db) {
+  const { rows: tableRows } = await db.query(
+    `SELECT to_regclass('public.website_page_analytics_daily') AS table_name`
+  )
+  if (!tableRows[0]?.table_name) {
+    return {
+      pageViews30d: 0,
+      uniqueVisitors30d: 0,
+      avgBounceRate30d: 0,
+      avgSessionSeconds30d: 0,
+      topPages: [],
+      dailyTrend: [],
+    }
+  }
+
+  const { rows: summaryRows } = await db.query(
+    `SELECT
+       COALESCE(SUM(page_views), 0)::bigint AS views_30d,
+       COALESCE(SUM(unique_visitors), 0)::bigint AS visitors_30d,
+       COALESCE(AVG(bounce_rate_percent), 0)::numeric(5,2) AS bounce_30d,
+       COALESCE(AVG(avg_session_seconds), 0)::numeric(10,2) AS session_seconds_30d
+     FROM website_page_analytics_daily
+     WHERE day >= current_date - interval '30 days'`
+  )
+
+  const { rows: topPageRows } = await db.query(
+    `SELECT
+       page_path,
+       COALESCE(SUM(page_views), 0)::bigint AS page_views,
+       COALESCE(SUM(unique_visitors), 0)::bigint AS unique_visitors
+     FROM website_page_analytics_daily
+     WHERE day >= current_date - interval '30 days'
+     GROUP BY page_path
+     ORDER BY page_views DESC, unique_visitors DESC
+     LIMIT 5`
+  )
+
+  const { rows: dailyRows } = await db.query(
+    `SELECT
+       day,
+       COALESCE(SUM(page_views), 0)::bigint AS page_views,
+       COALESCE(SUM(unique_visitors), 0)::bigint AS unique_visitors
+     FROM website_page_analytics_daily
+     WHERE day >= current_date - interval '14 days'
+     GROUP BY day
+     ORDER BY day ASC`
+  )
+
+  return {
+    pageViews30d: Number(summaryRows[0]?.views_30d || 0),
+    uniqueVisitors30d: Number(summaryRows[0]?.visitors_30d || 0),
+    avgBounceRate30d: Number(summaryRows[0]?.bounce_30d || 0),
+    avgSessionSeconds30d: Math.round(Number(summaryRows[0]?.session_seconds_30d || 0)),
+    topPages: topPageRows.map((r) => ({
+      pagePath: r.page_path,
+      pageViews: Number(r.page_views || 0),
+      uniqueVisitors: Number(r.unique_visitors || 0),
+    })),
+    dailyTrend: dailyRows.map((r) => ({
+      day: r.day,
+      pageViews: Number(r.page_views || 0),
+      uniqueVisitors: Number(r.unique_visitors || 0),
+    })),
+  }
+}
+
 export default async function adminRoutes(fastify) {
   fastify.addHook('preHandler', authenticate)
   fastify.addHook('preHandler', authorize('admin'))
@@ -486,6 +552,7 @@ export default async function adminRoutes(fastify) {
     const subRev = rev[0]?.sub_rev ?? 0
     const platformFromBookings = pf[0]?.platform_from_bookings ?? 0
     const settings = await getPlatformSettings(fastify)
+    const websiteTraffic = await fetchWebsiteTrafficStats(fastify.db)
     return {
       totalUsers: u[0].c,
       totalStudents: stu[0].c,
@@ -498,6 +565,7 @@ export default async function adminRoutes(fastify) {
       subscriptionRevenueUgx: subRev,
       platformBookingFeesUgx: platformFromBookings,
       platformFeePercent: settings.platform_fee_percent,
+      websiteTraffic,
     }
   })
 

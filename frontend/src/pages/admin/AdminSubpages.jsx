@@ -864,6 +864,7 @@ export function AdminStatsPage() {
 
   function exportCsv() {
     try {
+      const traffic = stats?.websiteTraffic || {}
       const lines = [
         ['Metric', 'Value'],
         ['Total users', stats?.totalUsers],
@@ -874,6 +875,10 @@ export function AdminStatsPage() {
         ['Subscription revenue UGX', stats?.subscriptionRevenueUgx],
         ['Platform booking fees UGX', stats?.platformBookingFeesUgx],
         ['Platform fee %', stats?.platformFeePercent],
+        ['Website page views (30d)', traffic.pageViews30d],
+        ['Website unique visitors (30d)', traffic.uniqueVisitors30d],
+        ['Avg bounce rate % (30d)', traffic.avgBounceRate30d],
+        ['Avg session seconds (30d)', traffic.avgSessionSeconds30d],
       ]
       const csv = lines.map((r) => r.join(',')).join('\n')
       const blob = new Blob([csv], { type: 'text/csv' })
@@ -888,6 +893,13 @@ export function AdminStatsPage() {
   }
 
   const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-UG'))
+  const traffic = stats?.websiteTraffic || {}
+  const topPages = traffic.topPages || []
+  const dailyTraffic = traffic.dailyTrend || []
+  const maxDailyViews = Math.max(1, ...dailyTraffic.map((d) => Number(d.pageViews || 0)))
+  const sessionMins = traffic.avgSessionSeconds30d
+    ? `${Math.floor(traffic.avgSessionSeconds30d / 60)}m ${traffic.avgSessionSeconds30d % 60}s`
+    : '0m 0s'
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -938,6 +950,76 @@ export function AdminStatsPage() {
             </div>
             <OperationsBar stats={stats} />
           </div>
+
+          <section className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="font-heading text-lg font-semibold text-navy">Website traffic analytics</h2>
+                <p className="mt-0.5 font-sans text-xs text-mid">Last 30 days (demo-seeded, admin-view only)</p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Page views (30d)', fmt(traffic.pageViews30d)],
+                ['Unique visitors (30d)', fmt(traffic.uniqueVisitors30d)],
+                ['Avg bounce rate', `${Number(traffic.avgBounceRate30d || 0).toFixed(1)}%`],
+                ['Avg session duration', sessionMins],
+              ].map(([label, val]) => (
+                <div key={label} className="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+                  <p className="font-heading text-xl font-bold text-navy">{val}</p>
+                  <p className="mt-1 font-sans text-xs text-mid">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div>
+                <h3 className="font-heading text-sm font-semibold text-navy">Top pages</h3>
+                {topPages.length === 0 ? (
+                  <p className="mt-3 font-sans text-sm text-mid">No website traffic rows yet.</p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {topPages.map((p) => (
+                      <li
+                        key={p.pagePath}
+                        className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-3 py-2 font-sans text-sm"
+                      >
+                        <span className="font-medium text-navy">{p.pagePath}</span>
+                        <span className="text-mid">
+                          {fmt(p.pageViews)} views · {fmt(p.uniqueVisitors)} visitors
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-heading text-sm font-semibold text-navy">14-day traffic trend</h3>
+                {dailyTraffic.length === 0 ? (
+                  <p className="mt-3 font-sans text-sm text-mid">No trend data yet.</p>
+                ) : (
+                  <div className="mt-4 flex h-40 items-end gap-1.5">
+                    {dailyTraffic.map((d) => (
+                      <div key={String(d.day)} className="flex flex-1 flex-col items-center gap-1.5">
+                        <div
+                          className="w-full max-w-[24px] rounded-t-sm bg-blue/90"
+                          style={{
+                            height: `${Math.max(5, (Number(d.pageViews || 0) / maxDailyViews) * 100)}%`,
+                          }}
+                          title={`${d.day}: ${fmt(d.pageViews)} views`}
+                        />
+                        <span className="text-[10px] text-mid">
+                          {new Date(d.day).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
 
           <details className="mt-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <summary className="cursor-pointer font-heading text-sm font-semibold text-navy">Raw JSON (debug)</summary>

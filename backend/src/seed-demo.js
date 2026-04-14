@@ -674,11 +674,21 @@ const demoMaterials = [
   },
 ]
 
+const trafficSeedPages = [
+  { path: '/', weight: 1.0 },
+  { path: '/tutors', weight: 0.66 },
+  { path: '/programs', weight: 0.5 },
+  { path: '/login', weight: 0.45 },
+  { path: '/register/student', weight: 0.33 },
+  { path: '/register/tutor', weight: 0.22 },
+]
+
 function demoEmailList() {
   return [...students.map((s) => s.email), ...tutors.map((t) => t.email)]
 }
 
 async function resetDemoUsers(client) {
+  await client.query(`DELETE FROM website_page_analytics_daily WHERE source = 'demo_seed'`)
   const emails = demoEmailList()
   await client.query(`DELETE FROM materials WHERE uploaded_by IN (SELECT id FROM users WHERE email = ANY($1::text[]))`, [
     emails,
@@ -701,6 +711,57 @@ async function resetDemoUsers(client) {
   ])
   const { rowCount } = await client.query(`DELETE FROM users WHERE email = ANY($1::text[])`, [emails])
   console.log(`[seed-demo] Removed ${rowCount} demo user(s).`)
+}
+
+async function seedDemoWebsiteAnalytics(client) {
+  const { rows: tableRows } = await client.query(
+    `SELECT to_regclass('public.website_page_analytics_daily') AS table_name`
+  )
+  if (!tableRows[0]?.table_name) {
+    console.log('[seed-demo] Skipping website analytics seed: migration 015 not applied yet.')
+    return
+  }
+
+  await client.query(`DELETE FROM website_page_analytics_daily WHERE source = 'demo_seed'`)
+
+  const days = 45
+  let inserted = 0
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const day = new Date()
+    day.setHours(0, 0, 0, 0)
+    day.setDate(day.getDate() - i)
+    const weekday = day.getDay()
+    const weekendBoost = weekday === 0 || weekday === 6 ? 1.15 : 1
+    const recencyBoost = i <= 14 ? 1.25 : 1
+    const baseline = 420 + Math.floor(Math.random() * 120)
+
+    for (const page of trafficSeedPages) {
+      const views = Math.max(
+        18,
+        Math.round((baseline * page.weight + Math.random() * 28) * weekendBoost * recencyBoost)
+      )
+      const visitors = Math.max(8, Math.round(views * (0.58 + Math.random() * 0.12)))
+      const avgSessionSeconds = Math.round(95 + Math.random() * 130)
+      const bounceRate = Math.min(92, Math.max(18, 35 + Math.random() * 28))
+
+      await client.query(
+        `INSERT INTO website_page_analytics_daily (
+          day, page_path, page_views, unique_visitors, avg_session_seconds, bounce_rate_percent, source
+        ) VALUES ($1::date, $2, $3, $4, $5, $6, 'demo_seed')`,
+        [
+          day.toISOString().slice(0, 10),
+          page.path,
+          views,
+          visitors,
+          avgSessionSeconds,
+          Number(bounceRate.toFixed(2)),
+        ]
+      )
+      inserted += 1
+    }
+  }
+
+  console.log(`[seed-demo] Added ${inserted} website analytics row(s) for admin demo charts.`)
 }
 
 function resolveUploadRoot() {
@@ -1012,6 +1073,7 @@ async function run() {
     await seedTutors(client, passwordHash)
     await seedDemoMaterials(client)
     await seedSampleBookings(client)
+    await seedDemoWebsiteAnalytics(client)
 
     console.log('[seed-demo] Done.')
     console.log(`[seed-demo] Password for all demo accounts: ${plain}`)
