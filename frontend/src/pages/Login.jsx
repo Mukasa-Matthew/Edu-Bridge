@@ -5,6 +5,7 @@ import { apiJson } from '../api/client.js'
 import { useToast } from '../context/ToastContext.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
 import { ROUTE_SEO, SITE_ORIGIN } from '../seo.js'
+import { getPostLoginPath } from '../services/auth.js'
 
 const inputClass =
   'mt-1 w-full rounded-lg border border-gray-200 bg-white py-3 px-4 font-sans text-sm text-navy placeholder:text-[#9ca3af] focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue/20'
@@ -52,12 +53,6 @@ function EyeHideIcon() {
   )
 }
 
-const ROLES = [
-  { id: 'student', label: 'Student', path: '/dashboard/student' },
-  { id: 'tutor', label: 'Tutor', path: '/dashboard/tutor' },
-  { id: 'admin', label: 'Admin', path: '/dashboard/admin' },
-]
-
 export default function Login() {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -65,9 +60,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [selectedRole, setSelectedRole] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
-  const [roleError, setRoleError] = useState('')
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -82,13 +75,8 @@ export default function Login() {
 
   async function handleSubmit(ev) {
     ev.preventDefault()
-    setRoleError('')
     setFormError('')
     if (!validate()) return
-    if (!selectedRole) {
-      setRoleError('Please select your account type')
-      return
-    }
     setLoading(true)
     try {
       const data = await apiJson('/api/auth/login', {
@@ -96,11 +84,10 @@ export default function Login() {
         body: {
           email: email.trim(),
           password,
-          role: selectedRole,
           rememberMe,
         },
       })
-      const dest = data.redirectUrl || ROLES.find((r) => r.id === selectedRole)?.path || '/'
+      const dest = getPostLoginPath(data)
       toast.success('Signed in successfully.')
       navigate(dest, { replace: true })
     } catch (err) {
@@ -269,35 +256,6 @@ export default function Login() {
                   />
                   <span className="font-sans text-sm text-mid">Remember me on this device</span>
                 </label>
-
-                <div>
-                  <p className="font-heading text-xs font-semibold uppercase tracking-wider text-mid">
-                    Signing in as:
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Account type">
-                    {ROLES.map(({ id, label }) => {
-                      const active = selectedRole === id
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedRole(id)
-                            setRoleError('')
-                          }}
-                          className={`rounded-full border px-4 py-2 font-heading text-sm font-semibold transition ${
-                            active
-                              ? 'border-navy bg-navy text-white'
-                              : 'border-gray-200 bg-white text-mid hover:border-gray-300'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {roleError ? <p className={fieldErrorClass}>{roleError}</p> : null}
-                </div>
 
                 <button
                   type="submit"

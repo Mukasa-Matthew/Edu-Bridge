@@ -184,7 +184,7 @@ export default async function authRoutes(fastify) {
   )
 
   fastify.post('/login', { schema: { body: loginBody } }, async (request, reply) => {
-    const { email, password, role } = request.body
+    const { email, password } = request.body
     const { rows } = await fastify.db.query(`SELECT * FROM users WHERE email = $1`, [email.toLowerCase().trim()])
     if (!rows.length) {
       return reply.status(401).send({ error: 'Unauthorized', message: 'Invalid email or password' })
@@ -194,10 +194,6 @@ export default async function authRoutes(fastify) {
     if (!ok) {
       return reply.status(401).send({ error: 'Unauthorized', message: 'Invalid email or password' })
     }
-    if (user.role !== role) {
-      return reply.status(403).send({ error: 'Forbidden', message: 'Selected account type does not match this email' })
-    }
-
     if (user.role === 'tutor') {
       const { rows: tp } = await fastify.db.query(`SELECT tutor_status FROM tutor_profiles WHERE user_id = $1`, [
         user.id,

@@ -73,11 +73,10 @@ export const registerTutorBody = {
 
 export const loginBody = {
   type: 'object',
-  required: ['email', 'password', 'role'],
+  required: ['email', 'password'],
   properties: {
     email: { type: 'string', format: 'email' },
     password: { type: 'string' },
-    role: { type: 'string', enum: ['student', 'tutor', 'admin'] },
   },
 }
 
