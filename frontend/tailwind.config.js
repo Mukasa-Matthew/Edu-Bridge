@@ -20,7 +20,7 @@ export default {
       },
       fontFamily: {
         sans: ['Lato', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        heading: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         float: {
