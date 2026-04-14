@@ -9,6 +9,7 @@ import TutorRegister from './pages/TutorRegister.jsx'
 import StudentDashboard from './pages/StudentDashboard.jsx'
 import TutorDashboard from './pages/TutorDashboard.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import WhatsAppFloatingButton from './components/WhatsAppFloatingButton.jsx'
 
 /** App routes — marketing site + auth placeholders + dashboards */
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/dashboard/tutor/*" element={<TutorDashboard />} />
           <Route path="/dashboard/admin/*" element={<AdminDashboard />} />
         </Routes>
+        <WhatsAppFloatingButton />
       </ToastProvider>
     </BrowserRouter>
   )
